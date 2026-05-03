@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LinkedIn Dagdigest</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #18181b;
+  --cream: #faf9f6;
+  --amber: #b45309;
+  --amber-bg: #fffbeb;
+  --amber-border: #fde68a;
+  --amber-bright: #d97706;
+  --gray: #71717a;
+  --gray-light: #e4e4e7;
+  --white: #ffffff;
+  --green: #15803d;
+  --green-bg: #f0fdf4;
+  --green-border: #bbf7d0;
+  --red: #dc2626;
+  --red-bg: #fef2f2;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'IBM Plex Sans', sans-serif;
+  background: var(--cream);
+  color: var(--ink);
+  min-height: 100vh;
+  font-size: 15px;
+}
+
+/* ── Header ──────────────────────────────────────────── */
+header {
+  background: var(--ink);
+  border-bottom: 3px solid var(--amber-bright);
+  padding: 1.1rem 2rem;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+header h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: -0.3px;
+}
+
+header h1 span {
+  color: var(--amber-bright);
+  font-style: italic;
+}
+
+.header-meta {
+  font-size: 0.78rem;
+  color: #a1a1aa;
+  font-weight: 300;
+  letter-spacing: 0.02em;
+}
+
+/* ── Step bar ────────────────────────────────────────── */
+.step-bar {
+  display: flex;
+  border-bottom: 1px solid var(--gray-light);
+  background: var(--white);
+  position: sticky;
+  top: 60px;
+  z-index: 99;
+}
+
+.step-item {
+  flex: 1;
+  padding: 0.6rem 0.5rem;
+  text-align: center;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--gray);
+  border-right: 1px solid var(--gray-light);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: all 0.25s;
+  cursor: default;
+}
+.step-item:last-child { border-right: none; }
+.step-item.active { background: var(--ink); color: #fff; }
+.step-item.done { background: var(--amber-bg); color: var(--amber); }
+
+/* ── Layout ──────────────────────────────────────────── */
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+/* ── Card ────────────────────────────────────────────── */
+.card {
+  background: var(--white);
+  border-radius: 12px;
+  border: 1px solid var(--gray-light);
+  padding: 1.75rem 2rem;
+  margin-bottom: 1.25rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+
+.card-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 0.35rem;
+}
+
+.card-sub {
+  font-size: 0.85rem;
+  color: var(--gray);
+  line-height: 1.6;
+  margin-bottom: 1.25rem;
+}
+
+/* ── Labels ──────────────────────────────────────────── */
+.label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--gray);
+  margin-bottom: 0.4rem;
+}
+
+/* ── Textarea ────────────────────────────────────────── */
+textarea {
+  width: 100%;
+  border: 1.5px solid var(--gray-light);
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.77rem;
+  color: var(--ink);
+  background: var(--cream);
+  resize: vertical;
+  min-height: 130px;
+  line-height: 1.6;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+textarea:focus {
+  outline: none;
+  border-color: var(--amber-bright);
+  box-shadow: 0 0 0 3px rgba(217,119,6,0.1);
+}
+
+/* ── Buttons ─────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.65rem 1.4rem;
+  border-radius: 8px;
+  border: none;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-weight: 600;
+  font-size: 0.87rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  letter-spacing: 0.01em;
+  line-height: 1;
+}
+
+.btn-primary { background: var(--ink); color: white; }
+.btn-primary:hover:not(:disabled) { background: #27272a; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,0,0,0.15); }
+.btn-primary:disabled { background: var(--gray-light); color: var(--gray); cursor: not-allowed; transform: none; box-shadow: none; }
+
+.btn-amber { background: var(--amber-bright); color: white; }
+.btn-amber:hover:not(:disabled) { background: var(--amber); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(180,83,9,0.25); }
+.btn-amber:disabled { background: var(--gray-light); color: var(--gray); cursor: not-allowed; transform: none; box-shadow: none; }
+
+.btn-green { background: var(--green); color: white; }
+.btn-green:hover { background: #166534; transform: translateY(-1px); }
+
+.btn-outline {
+  background: transparent;
+  border: 1.5px solid var(--gray-light);
+  color: var(--ink);
+}
+.btn-outline:hover { border-color: var(--ink); background: var(--cream); }
+
+.btn-sm { padding: 0.45rem 1rem; font-size: 0.8rem; }
+
+.row-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  margin-top: 1.1rem;
+  flex-wrap: wrap;
+}
+
+/* ── Results table ───────────────────────────────────── */
+.table-wrap { overflow-x: auto; margin-top: 1rem; }
+
+table { width: 100%; border-collapse: collapse; }
+
+thead th {
+  text-align: left;
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--gray);
+  padding: 0.55rem 0.85rem;
+  border-bottom: 2px solid var(--gray-light);
+  white-space: nowrap;
+}
+
+tbody td {
+  padding: 0.9rem 0.85rem;
+  border-bottom: 1px solid var(--gray-light);
+  vertical-align: top;
+  font-size: 0.87rem;
+  line-height: 1.5;
+}
+
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover td { background: #fafaf9; }
+tbody tr.is-selected td { background: var(--amber-bg); }
+
+.rank-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #a1a1aa;
+  display: block;
+  text-align: center;
+  min-width: 24px;
+}
+
+.author-name { font-weight: 600; display: block; }
+.author-org { font-size: 0.75rem; color: var(--gray); display: block; margin-top: 0.1rem; }
+
+.post-summary { color: var(--ink); }
+.post-reden {
+  font-size: 0.73rem;
+  color: var(--amber);
+  font-weight: 500;
+  display: block;
+  margin-top: 0.3rem;
+  font-style: italic;
+}
+
+.post-link {
+  color: var(--amber-bright);
+  text-decoration: none;
+  font-size: 0.8rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.post-link:hover { text-decoration: underline; }
+
+input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--amber-bright);
+  cursor: pointer;
+}
+
+/* ── Selection counter ───────────────────────────────── */
+.sel-counter {
+  padding: 0.7rem 1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+  border: 1px solid var(--amber-border);
+  background: var(--amber-bg);
+  color: var(--amber);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.sel-counter.complete {
+  background: var(--green-bg);
+  border-color: var(--green-border);
+  color: var(--green);
+}
+
+/* ── Loading ─────────────────────────────────────────── */
+.loading-state {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem 0;
+  color: var(--gray);
+  font-style: italic;
+  font-size: 0.87rem;
+}
+
+.spinner {
+  width: 22px;
+  height: 22px;
+  border: 2.5px solid var(--gray-light);
+  border-top-color: var(--amber-bright);
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Banners ─────────────────────────────────────────── */
+.banner-error {
+  background: var(--red-bg);
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 0.85rem 1.1rem;
+  color: var(--red);
+  font-size: 0.84rem;
+  margin-top: 1rem;
+  display: none;
+}
+
+.banner-success {
+  background: var(--green-bg);
+  border: 1px solid var(--green-border);
+  border-radius: 8px;
+  padding: 0.85rem 1.1rem;
+  color: var(--green);
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+/* ── Profile preview ─────────────────────────────────── */
+.profile-preview {
+  background: var(--cream);
+  border: 1px solid var(--gray-light);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.74rem;
+  line-height: 1.7;
+  max-height: 240px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  color: var(--ink);
+  margin-top: 0.75rem;
+}
+
+/* ── Code path ───────────────────────────────────────── */
+.path-code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.78rem;
+  background: var(--cream);
+  border: 1px solid var(--gray-light);
+  padding: 0.25rem 0.6rem;
+  border-radius: 5px;
+  display: inline-block;
+  margin-top: 0.3rem;
+  word-break: break-all;
+}
+
+.divider { border: none; border-top: 1px solid var(--gray-light); margin: 1.25rem 0; }
+.mt { margin-top: 1rem; }
+
+/* ── Parse status ────────────────────────────────────── */
+.parse-status { font-size: 0.8rem; color: var(--gray); }
+.parse-status.ok { color: var(--green); }
+.parse-status.err { color: var(--red); }
+
+/* ── Tip box ─────────────────────────────────────────── */
+.tip-box {
+  background: var(--amber-bg);
+  border-left: 3px solid var(--amber-bright);
+  border-radius: 0 8px 8px 0;
+  padding: 0.85rem 1.1rem;
+  font-size: 0.82rem;
+  color: var(--ink);
+  line-height: 1.6;
+}
+.tip-box strong { color: var(--amber); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>LinkedIn <span>Dagdigest</span></h1>
+  <span class="header-meta" id="header-date"></span>
+</header>
+
+<div class="step-bar">
+  <div class="step-item active" id="sb1">① Invoer</div>
+  <div class="step-item" id="sb2">② Profiel</div>
+  <div class="step-item" id="sb3">③ Top 10</div>
+  <div class="step-item" id="sb4">④ Gereed</div>
+</div>
+
+<div class="container">
+
+  <!-- ══ PANEL: INVOER ══════════════════════════════════ -->
+  <div id="panel-input">
+
+    <div class="card">
+      <div class="card-title">Posts uit je LinkedIn feed</div>
+      <div class="card-sub">
+        Plak de JSON-output van de <strong>LinkedIn Dagdigest shortcut</strong> in Claude in Chrome. Of klik op "Demo laden" om de app te testen met voorbeelddata.
+      </div>
+
+      <span class="label">JSON van shortcut (plak hier)</span>
+      <textarea id="posts-input" placeholder='[
+  {
+    "auteur": "Jan de Vries",
+    "organisatie": "Philips",
+    "tekst": "Volledige posttekst...",
+    "link": "https://www.linkedin.com/feed/update/urn:li:activity:7...",
+    "tijdstip": "2u"
+  }
+]'></textarea>
+
+      <div class="row-actions">
+        <button class="btn btn-primary" onclick="startRanking()">Analyseer posts →</button>
+        <button class="btn btn-outline" onclick="loadDemo()">Demo laden</button>
+        <span class="parse-status" id="parse-status"></span>
+      </div>
+      <div class="banner-error" id="input-error"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Huidig interesseprofiel</div>
+      <div class="card-sub">
+        Je profiel wordt gebruikt om posts te rangschikken. Bij de eerste keer is je profiel al ingevuld. Elke sessie download je een bijgewerkte versie — plak die volgende keer hier terug.
+      </div>
+
+      <span class="label">Profiel (Markdown)</span>
+      <textarea id="profile-input" style="min-height:200px"></textarea>
+
+      <div class="tip-box mt">
+        <strong>💡 Tip:</strong> Sla het interesseprofiel op in<br>
+        <code>C:\Users\merij\Documents\Claude\PROJECTS\linkedinscroll\interesseprofiel.md</code><br>
+        en plak de inhoud hier elke sessie.
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══ PANEL: RESULTATEN ══════════════════════════════ -->
+  <div id="panel-results" style="display:none">
+    <div class="card">
+      <div class="card-title">Jouw top 10 van vandaag</div>
+      <div class="card-sub">
+        Claude heeft de posts gerangschikt op basis van je interesseprofiel. Selecteer precies <strong>3 posts</strong> die jij het interessantst vond — dit verfijnt de selectie voor de volgende sessie.
+      </div>
+
+      <div id="loading-rank" class="loading-state">
+        <div class="spinner"></div>
+        <span id="loading-text">Posts worden geanalyseerd en gerangschikt op relevantie...</span>
+      </div>
+
+      <div class="banner-error" id="rank-error"></div>
+
+      <div id="results-content" style="display:none">
+        <div class="sel-counter" id="sel-counter">
+          <span>Selecteer je <strong>top-3</strong>: <span id="sel-count">0</span> van 3 geselecteerd</span>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Auteur</th>
+                <th>Samenvatting (15 woorden)</th>
+                <th>Link</th>
+                <th>Top-3</th>
+              </tr>
+            </thead>
+            <tbody id="results-tbody"></tbody>
+          </table>
+        </div>
+
+        <div class="row-actions" style="margin-top:1.5rem">
+          <button class="btn btn-amber" onclick="processSelection()" id="btn-process" disabled>
+            Verwerk mijn selectie →
+          </button>
+          <button class="btn btn-outline" onclick="resetApp()">← Opnieuw</button>
+        </div>
+        <div class="banner-error" id="process-error"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PANEL: LADEN PROFIEL ═══════════════════════════ -->
+  <div id="panel-updating" style="display:none">
+    <div class="card">
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <span>Interesseprofiel wordt bijgewerkt op basis van je top-3 selectie...</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PANEL: GEREED ══════════════════════════════════ -->
+  <div id="panel-done" style="display:none">
+    <div class="card">
+      <div class="card-title">✓ Profiel bijgewerkt</div>
+      <div class="card-sub">
+        Je interesseprofiel is aangevuld met de sessie van vandaag. Download het bestand en sla het op in:<br>
+        <span class="path-code">C:\Users\merij\Documents\Claude\PROJECTS\linkedinscroll\interesseprofiel.md</span>
+      </div>
+
+      <div class="profile-preview" id="updated-profile-preview"></div>
+
+      <div class="row-actions" style="margin-top:1.25rem">
+        <button class="btn btn-green" onclick="downloadProfile()">⬇ Download interesseprofiel.md</button>
+        <button class="btn btn-outline" onclick="resetApp()">Nieuwe sessie starten</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ─── Standaard interesseprofiel ───────────────────────────────────────────
+const DEFAULT_PROFILE = `# LinkedIn Interesseprofiel — Merijn
+
+**Aangemaakt:** ${new Date().toLocaleDateString('nl-NL', {day:'numeric',month:'long',year:'numeric'})}
+**Doel:** Dagelijkse LinkedIn-selectie verfijnen op basis van top-3 keuzes per sessie.
+
+---
+
+## Kerninteresses
+
+- **AI** — grote taalmodellen, agenten, automatisering, LLM-toepassingen, ChatGPT, Claude, Gemini, AI in de praktijk, RAG, AI-infrastructuur
+- **Digital Humans** — avatars, synthetische media, virtuele presentatoren, digitale klonen, immersive tech
+- **Digitale zorg** — eHealth, zorgtech, digitale transformatie in de zorg, telezorg, patiëntapps, zorgdata, MedTech
+- **Gehandicaptenzorg** — ondersteuning, inclusie, toegankelijkheid, domotica, AAC, hulpmiddelen, participatie, VG-sector
+- **Pluryn** — organisatienieuws, medewerkers, strategie, innovatie, beleid, cliënten
+
+---
+
+## Selectiegeschiedenis
+
+*Nog geen sessies opgeslagen.*
+
+---
+
+## Geleerde voorkeuren
+
+*Wordt aangevuld na meerdere sessies.*`;
+
+// ─── State ────────────────────────────────────────────────────────────────
+let rankedPosts = [];
+let selectedIndices = new Set();
+let updatedProfileText = '';
+let currentProfile = DEFAULT_PROFILE;
+
+// ─── Init ─────────────────────────────────────────────────────────────────
+document.getElementById('header-date').textContent =
+  new Date().toLocaleDateString('nl-NL', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+document.getElementById('profile-input').value = DEFAULT_PROFILE;
+
+// ─── Step bar ─────────────────────────────────────────────────────────────
+function setStep(n) {
+  ['sb1','sb2','sb3','sb4'].forEach((id, i) => {
+    const el = document.getElementById(id);
+    el.className = 'step-item';
+    if (i + 1 < n) el.classList.add('done');
+    else if (i + 1 === n) el.classList.add('active');
+  });
+}
+
+// ─── Demo data ────────────────────────────────────────────────────────────
+function loadDemo() {
+  const demo = [
+    {"auteur":"Maarten van den Berg","organisatie":"Microsoft Nederland","tekst":"Vandaag lanceren we Azure AI Studio in Nederlandse datacenters. Zorginstellingen kunnen AI-modellen nu lokaal draaien met volledige AVG-compliance. Al vijf grote zorginstellingen draaien pilots.","link":"https://www.linkedin.com/feed/update/urn:li:activity:7200001","tijdstip":"1u"},
+    {"auteur":"Lisa Vermeer","organisatie":"Philips Health","tekst":"Digital humans in de zorg: onze AI-avatar getest als onboarding-assistent voor verpleegkundigen. Resultaat: 87% vond de avatar minder intimiderend dan een echte trainer voor gevoelige onderwerpen.","link":"https://www.linkedin.com/feed/update/urn:li:activity:7200002","tijdstip":"2u"},
+    {"auteur":"Sander Hoek","organisatie":"Pluryn","tekst":"Trots! Pluryn lanceert vandaag de nieuwe app voor cliënten in de gehandicaptenzorg. Cliënten beheren zelf hun dagplanning en communiceren met begeleiders. Inclusie begint bij autonomie.","link":"https://www.linkedin.com/feed/update/urn:li:activity:7200003","tijdstip":"3u"},
+    {"auteur":"Emma de Groot","organisatie":"VWS","tekst":"VWS publiceert de nationale AI-strategie voor de zorg 2024-2030. Kernpunten: data-infrastructuur, ethische kaders, nationaal kenniscentrum. Download via mijn profiel.","link":"https://www.linkedin.com/feed/update/urn:li:activity:7200004","tijdstip":"4u"},
+    {"auteur":"Petra Lammers","organisatie":"Inclusion Tech","tekst":"Nieuw onderzoek: AAC-apps met AI-spraak verbeteren communicatiesnelheid bij mensen met een communicatieve beperking met 40%. Enorm potentieel voor inclusieve technologie.","link":"https://www.linkedin.com/feed/update/urn:li:activity:7200005","tijdstip":"5u"},
+    {"auteur":"Tom Adriaans","organisatie":"Accenture","tekst":"73% van NL-zorgprofessionals bespaart tijd met AI, maar slechts 31% voelt zich voldoende opgeleid. De training-gap is het echte probleem, niet de technologie zelf.","link":"https://www.linkedin.com/feed/update/urn:li:activity:7200006","tijdstip":"6u"},
+    {"auteur":"Fiona Bakker","organisatie":"Zorginstituut NL","tekst":"Wanneer neemt AI de beslissing over van de zorgprofessional? En wie is aansprakelijk? Juridische kaders lopen ver achter op de tech. Wij werken aan richtlijnen.","link":"https://www.linkedin.com/feed/update/urn:li:activity:7200007","tijdstip":"7u"},
+    {"auteur":"Rick van Dijk","organisatie":"DeepMind","tekst":"AlphaFold 3 presteert nu op RNA-eiwitinteracties met 91% nauwkeurigheid. Voor zeldzame genetische aandoeningen en sommige vormen van verstandelijke beperkingen opent dit nieuwe therapeutische wegen.","link":"https://www.linkedin.com/feed/update/urn:li:activity:7200008","tijdstip":"8u"},
+    {"auteur":"Sophie Mulder","organisatie":"Digital Health Coalition","tekst":"De shift van 'AI als tool' naar 'AI als collega': zorgverleners die AI als sparringpartner inzetten rapporteren hogere werktevredenheid en minder burnout.","link":"https://www.linkedin.com/feed/update/urn:li:activity:7200009","tijdstip":"9u"},
+    {"auteur":"Bas Koopmans","organisatie":"Nvidia","tekst":"Nieuwe GPU's voor healthcare AI: medische beeldverwerking die 4 uur duurde nu onder 8 minuten. Dit verandert real-time diagnostiek fundamenteel voor radiologen.","link":"https://www.linkedin.com/feed/update/urn:li:activity:7200010","tijdstip":"10u"},
+    {"auteur":"Jan Pieters","organisatie":"KPMG","tekst":"IT-budgetten stijgen gemiddeld met 12% in 2024, maar de helft gaat naar security en compliance. CIO's staan voor moeilijke keuzes rondom innovatie vs risico.","link":"https://www.linkedin.com/feed/update/urn:li:activity:7200011","tijdstip":"11u"},
+    {"auteur":"Anna Vissers","organisatie":"Self","tekst":"Nieuwe LinkedIn-feature: AI-gegenereerde samenvattingen van lange posts. Handig of verlies je de nuance? Mijn mening: het hangt af van het onderwerp. Technisch prima, inhoudelijk soms arm.","link":"https://www.linkedin.com/feed/update/urn:li:activity:7200012","tijdstip":"12u"}
+  ];
+  document.getElementById('posts-input').value = JSON.stringify(demo, null, 2);
+  const ps = document.getElementById('parse-status');
+  ps.textContent = `✓ ${demo.length} demo-posts geladen`;
+  ps.className = 'parse-status ok';
+}
+
+// ─── Claude API ───────────────────────────────────────────────────────────
+async function callClaude(systemPrompt, userMessage, maxTokens = 1000) {
+  const resp = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: maxTokens,
+      system: systemPrompt,
+      messages: [{ role: "user", content: userMessage }]
+    })
+  });
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => ({}));
+    throw new Error(err.error?.message || `HTTP ${resp.status}`);
+  }
+  const data = await resp.json();
+  return data.content.map(b => b.text || '').join('');
+}
+
+// ─── Start ranking ────────────────────────────────────────────────────────
+async function startRanking() {
+  const rawInput = document.getElementById('posts-input').value.trim();
+  const profileText = document.getElementById('profile-input').value.trim();
+
+  if (!rawInput) {
+    showErr('input-error', 'Plak eerst de JSON-output van de shortcut, of laad de demo.');
+    return;
+  }
+
+  let posts;
+  try {
+    posts = JSON.parse(rawInput);
+    if (!Array.isArray(posts) || posts.length === 0) throw new Error();
+  } catch {
+    showErr('input-error', 'Ongeldige JSON — zorg dat je de volledige JSON-array uit de shortcut plakt.');
+    return;
+  }
+
+  hideErr('input-error');
+  currentProfile = profileText || DEFAULT_PROFILE;
+
+  document.getElementById('panel-input').style.display = 'none';
+  document.getElementById('panel-results').style.display = 'block';
+  document.getElementById('loading-rank').style.display = 'flex';
+  document.getElementById('results-content').style.display = 'none';
+  hideErr('rank-error');
+  setStep(2);
+
+  const sys = `Je bent een LinkedIn-feedcurator voor Merijn, een IT-manager gespecialiseerd in zorginnovatie en digitale technologie in Nederland. Jouw taak: selecteer de 10 meest relevante posts uit de feed op basis van zijn interesseprofiel, en schrijf een Nederlandse samenvatting van PRECIES 15 woorden per post.
+
+Geef ALLEEN een geldige JSON-array terug — geen uitleg, geen markdown-backticks, geen tekst eromheen.
+
+Formaat:
+[
+  {
+    "rank": 1,
+    "auteur": "Naam Achternaam",
+    "organisatie": "Bedrijf of functie",
+    "samenvatting": "Precies vijftien Nederlandse woorden die de kern van de post samenvatten.",
+    "reden": "Kort: waarom relevant (max 6 woorden)",
+    "link": "https://..."
+  }
+]`;
+
+  const usr = `Interesseprofiel van Merijn:
+${currentProfile}
+
+Feed-posts (${posts.length} stuks):
+${JSON.stringify(posts, null, 2)}
+
+Selecteer de 10 meest relevante posts. Geef ALLEEN de JSON-array terug.`;
+
+  try {
+    const result = await callClaude(sys, usr, 1000);
+    const clean = result.replace(/```json|```/g, '').trim();
+    rankedPosts = JSON.parse(clean);
+    renderResults();
+  } catch (e) {
+    document.getElementById('loading-rank').style.display = 'none';
+    showErr('rank-error', `Fout bij rangschikken: ${e.message}. Controleer je API-verbinding en probeer opnieuw.`);
+  }
+}
+
+// ─── Render results ───────────────────────────────────────────────────────
+function renderResults() {
+  document.getElementById('loading-rank').style.display = 'none';
+  document.getElementById('results-content').style.display = 'block';
+  setStep(3);
+
+  selectedIndices.clear();
+  updateCounter();
+
+  const tbody = document.getElementById('results-tbody');
+  tbody.innerHTML = '';
+
+  rankedPosts.forEach((post, i) => {
+    const tr = document.createElement('tr');
+    tr.id = `row-${i}`;
+    tr.innerHTML = `
+      <td><span class="rank-num">${post.rank}</span></td>
+      <td>
+        <span class="author-name">${esc(post.auteur)}</span>
+        <span class="author-org">${esc(post.organisatie || '')}</span>
+      </td>
+      <td>
+        <span class="post-summary">${esc(post.samenvatting)}</span>
+        <span class="post-reden">${esc(post.reden || '')}</span>
+      </td>
+      <td><a href="${esc(post.link)}" target="_blank" class="post-link">→ Bekijk</a></td>
+      <td style="text-align:center">
+        <input type="checkbox" class="top3-check" id="chk-${i}" onchange="toggleSelect(${i})">
+      </td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+// ─── Toggle selection ─────────────────────────────────────────────────────
+function toggleSelect(i) {
+  const chk = document.getElementById(`chk-${i}`);
+  if (chk.checked) {
+    if (selectedIndices.size >= 3) { chk.checked = false; return; }
+    selectedIndices.add(i);
+    document.getElementById(`row-${i}`).classList.add('is-selected');
+  } else {
+    selectedIndices.delete(i);
+    document.getElementById(`row-${i}`).classList.remove('is-selected');
+  }
+  updateCounter();
+}
+
+function updateCounter() {
+  const n = selectedIndices.size;
+  const ctr = document.getElementById('sel-counter');
+  const btn = document.getElementById('btn-process');
+  if (n === 3) {
+    ctr.className = 'sel-counter complete';
+    ctr.innerHTML = `<span>✓ <strong>Top-3 geselecteerd!</strong> Klik op "Verwerk mijn selectie".</span>`;
+    btn.disabled = false;
+  } else {
+    ctr.className = 'sel-counter';
+    ctr.innerHTML = `<span>Selecteer je <strong>top-3</strong>: <span id="sel-count">${n}</span> van 3 geselecteerd</span>`;
+    btn.disabled = true;
+  }
+}
+
+// ─── Process selection ────────────────────────────────────────────────────
+async function processSelection() {
+  const top3 = [...selectedIndices].sort((a,b)=>a-b).map(i => rankedPosts[i]);
+
+  document.getElementById('panel-results').style.display = 'none';
+  document.getElementById('panel-updating').style.display = 'block';
+  setStep(4);
+
+  const today = new Date().toLocaleDateString('nl-NL', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+
+  const sys = `Je bent een profielmanager voor Merijn's LinkedIn-interesseprofiel. Werk het bestaande Markdown-profiel bij op basis van de top-3 selectie van vandaag. 
+
+Voeg een nieuwe entry toe in de sectie "Selectiegeschiedenis" met de datum en de top-3. Werk "Geleerde voorkeuren" bij als je patronen ziet in de selecties.
+
+Geef ALLEEN het volledige bijgewerkte Markdown-profiel terug — geen uitleg, geen backticks.`;
+
+  const usr = `Huidig profiel:
+${currentProfile}
+
+Top-3 selectie van ${today}:
+${top3.map((p, i) => `${i+1}. **${p.auteur}** (${p.organisatie || ''}) — "${p.samenvatting}"`).join('\n')}
+
+Geef het volledige bijgewerkte Markdown-profiel terug.`;
+
+  try {
+    const result = await callClaude(sys, usr, 1000);
+    updatedProfileText = result.trim();
+    document.getElementById('panel-updating').style.display = 'none';
+    document.getElementById('panel-done').style.display = 'block';
+    document.getElementById('updated-profile-preview').textContent = updatedProfileText;
+    setStep(4);
+  } catch (e) {
+    document.getElementById('panel-updating').style.display = 'none';
+    document.getElementById('panel-results').style.display = 'block';
+    showErr('process-error', `Fout bij bijwerken profiel: ${e.message}`);
+    setStep(3);
+  }
+}
+
+// ─── Download ─────────────────────────────────────────────────────────────
+function downloadProfile() {
+  const blob = new Blob([updatedProfileText], { type: 'text/markdown;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'interesseprofiel.md';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// ─── Reset ────────────────────────────────────────────────────────────────
+function resetApp() {
+  rankedPosts = [];
+  selectedIndices.clear();
+
+  // Feed updated profile back into the textarea for next session
+  if (updatedProfileText) {
+    document.getElementById('profile-input').value = updatedProfileText;
+    currentProfile = updatedProfileText;
+  }
+  updatedProfileText = '';
+
+  document.getElementById('posts-input').value = '';
+  document.getElementById('parse-status').textContent = '';
+  document.getElementById('parse-status').className = 'parse-status';
+
+  document.getElementById('panel-input').style.display = 'block';
+  document.getElementById('panel-results').style.display = 'none';
+  document.getElementById('panel-done').style.display = 'none';
+  document.getElementById('panel-updating').style.display = 'none';
+
+  hideErr('input-error');
+  hideErr('rank-error');
+  hideErr('process-error');
+  setStep(1);
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────
+function showErr(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+function hideErr(id) {
+  document.getElementById(id).style.display = 'none';
+}
+function esc(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>
